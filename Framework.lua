@@ -42,8 +42,8 @@ local function drag(f, h)
 end
 
 local function makeMain(Title, ImageID)
-	local gui = create("ScreenGui", {Parent = playerGui, ResetOnSpawn = false, Name = Title.."Hub_Gui"})
-	local toggleFrame = create("Frame", {Parent = gui, Size = UDim2.new(0, 60, 0, 60), Position = UDim2.new(0.005, 0, 0.001, 0), BackgroundTransparency = 1})
+	local gui = create("ScreenGui", {Parent = playerGui, ResetOnSpawn = false, Name = Title.."_Gui"})
+	local toggleFrame = create("Frame", {Parent = gui, Size = UDim2.new(0, 60, 0, 60), Position = UDim2.new(0.005, 0, 0.15, 0), BackgroundTransparency = 1})
 	local toggleBtn = create("ImageButton", {Parent = toggleFrame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Image = ImageID})
 
 	drag(toggleFrame)
@@ -64,9 +64,9 @@ local function makeMain(Title, ImageID)
 
 	local top = create("Frame", {Parent = main, Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Color3.fromRGB(45, 45, 45), BorderSizePixel = 0, ZIndex = 999})
 	local filler = create("Frame", {Parent = main, Size = UDim2.new(1, 0, 0, 7), BackgroundColor3 = Color3.fromRGB(45, 45, 45), BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 40), ZIndex = 998})
-	local title = create("TextLabel", {Parent = top, Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = Title.. " Hub", TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.FredokaOne, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 999})
+	local title = create("TextLabel", {Parent = top, Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = Title, TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.FredokaOne, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 999})
 	local closeBtn = create("TextButton", {Parent = top, Size = UDim2.new(0, 45, 1, 0), Position = UDim2.new(1, -45, 0, 0), Text = "X", BackgroundTransparency = 1, TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.FredokaOne, TextSize = 20, ZIndex = 999})
-	
+
 	create("UICorner", {Parent = top, CornerRadius = UDim.new(0.1, 0)})
 	drag(main, top)
 
@@ -93,20 +93,20 @@ local function makeMain(Title, ImageID)
 		ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
 	})
 	create("UIListLayout", {Parent = scroll, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder})
-	
+
 	local open = false
-	
-	
+
+
 	local OpenX = 0
 	local OpenY = 0
-	
+
 	local function openUI() open = true main.Visible = true applyTween(main, {Position = UDim2.new(0.5, OpenX, 0.5, OpenY)}, 0.3) end
 	local function closeUI() open = false applyTween(main, {Position = UDim2.new(0.5, main.Position.X.Offset, 1.5, main.Position.Y.Offset)}, 0.3) task.delay(0.3, function() if not open then main.Visible = false end end) end
-	
+
 	toggleBtn.MouseButton1Click:Connect(function() 
 		if open then 
 			closeUI() 
-			
+
 			OpenX = main.Position.X.Offset
 			OpenY = main.Position.Y.Offset
 		else 
@@ -114,11 +114,11 @@ local function makeMain(Title, ImageID)
 		end 
 	end)
 	closeBtn.MouseButton1Click:Connect(closeUI)
-	
+
 	return main
 end
 
-mainUI = makeMain("Temu Redz", "rbxassetid://85516224537304")
+mainUI = makeMain("Mattcy Fruit Finder", "rbxassetid://82352327589859")
 
 local sectionFrames = {} 
 local currentSectionContainer = nil
@@ -170,7 +170,7 @@ local function makeSection(name)
 	})
 
 	currentSectionContainer = sectionFrame
-	
+
 	local navBtn = create("TextButton", {
 		Parent = mainUI:FindFirstChild("Sidebar"),
 		Size = UDim2.new(0.9, 0, 0, 35),
@@ -180,7 +180,7 @@ local function makeSection(name)
 		Font = Enum.Font.GothamBold,
 		TextSize = 14
 	})
-	
+
 	create("UICorner", {Parent = navBtn, CornerRadius = UDim.new(0, 4)})
 
 	navBtn.MouseButton1Click:Connect(function()
@@ -255,11 +255,11 @@ local function makeSlider(text, min, max, default, callback)
 	knob.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
 	end)
-	
+
 	UIS.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
 	end)
-	
+
 	UIS.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then update(input) end
 	end)
@@ -396,6 +396,144 @@ local function makeDropdown(text, list, callback)
 	end
 
 	populate(list)
-	
+
 	return populate
+end
+
+local function makeField(title, default, callback)
+	local frame = create("Frame", {
+		Parent = currentSectionContainer,
+		Size = UDim2.new(1, -10, 0, 55),
+		BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+		BorderSizePixel = 0
+	})
+	create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
+
+	local label = create("TextLabel", {
+		Parent = frame,
+		Size = UDim2.new(1, -20, 0, 20),
+		Position = UDim2.new(0, 10, 0, 5),
+		BackgroundTransparency = 1,
+		Text = title,
+		TextColor3 = Color3.new(1,1,1),
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left
+	})
+
+	local box = create("TextBox", {
+		Parent = frame,
+		Size = UDim2.new(1, -20, 0, 25),
+		Position = UDim2.new(0, 10, 0, 25),
+		BackgroundColor3 = Color3.fromRGB(30,30,30),
+		Text = default or "None",
+		TextColor3 = Color3.new(1,1,1),
+		Font = Enum.Font.Gotham,
+		TextSize = 14,
+		ClearTextOnFocus = false
+	})
+	create("UICorner", {Parent = box, CornerRadius = UDim.new(0, 4)})
+
+	box.FocusLost:Connect(function()
+		if callback then
+			callback(box.Text)
+		end
+	end)
+
+	return function()
+		return box.Text
+	end
+end
+
+local function makeMultiDropdown(text, list, callback)
+	local frame = create("Frame", {
+		Parent = currentSectionContainer,
+		Size = UDim2.new(1, -10, 0, 45),
+		BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+		BorderSizePixel = 0,
+		ClipsDescendants = true
+	})
+	create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
+
+	local selected = {}
+
+	local label = create("TextLabel", {
+		Parent = frame,
+		Size = UDim2.new(1, -15, 0, 45),
+		Position = UDim2.new(0, 15, 0, 0),
+		BackgroundTransparency = 1,
+		Text = text .. ": None ↓",
+		TextColor3 = Color3.new(1,1,1),
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		TextXAlignment = Enum.TextXAlignment.Left
+	})
+
+	local btn = create("TextButton", {
+		Parent = frame,
+		Size = UDim2.new(1, 0, 0, 45),
+		BackgroundTransparency = 1,
+		Text = ""
+	})
+
+	local container = create("Frame", {
+		Parent = frame,
+		Size = UDim2.new(1, 0, 0, 0),
+		Position = UDim2.new(0, 0, 0, 45),
+		BackgroundTransparency = 1,
+		AutomaticSize = Enum.AutomaticSize.Y
+	})
+	create("UIListLayout", {Parent = container})
+
+	local open = false
+
+	local function updateLabel()
+		local t = {}
+		for k,v in pairs(selected) do
+			if v then table.insert(t, k) end
+		end
+		label.Text = text .. ": " .. (#t > 0 and table.concat(t, ", ") or "None") .. (open and " ↑" or " ↓")
+	end
+
+	btn.MouseButton1Click:Connect(function()
+		open = not open
+		applyTween(frame, {Size = UDim2.new(1, -10, 0, open and (45 + container.AbsoluteSize.Y) or 45)})
+		updateLabel()
+	end)
+
+	for _,v in pairs(list) do
+		selected[v] = false
+
+		local opt = create("TextButton", {
+			Parent = container,
+			Size = UDim2.new(1, 0, 0, 30),
+			BackgroundColor3 = Color3.fromRGB(40,40,40),
+			Text = v,
+			TextColor3 = Color3.fromRGB(200,200,200),
+			Font = Enum.Font.Gotham,
+			TextSize = 12
+		})
+		create("UICorner", {Parent = opt, CornerRadius = UDim.new(0,4)})
+
+		local function updateVisual()
+			if selected[v] then
+				applyTween(opt, {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}, 0.15)
+			else
+				applyTween(opt, {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}, 0.15)
+			end
+		end
+
+		opt.MouseButton1Click:Connect(function()
+			selected[v] = not selected[v]
+			updateVisual()
+			if callback then
+				callback(selected)
+			end
+			updateLabel()
+		end)
+	end
+
+	return function()
+		return selected
+	end
 end
