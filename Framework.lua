@@ -215,7 +215,7 @@ function UIModule:CreateWindow(Title, ImageID)
 			local frame = create("Frame", {Parent = sectionFrame, Size = UDim2.new(1, -10, 0, 45), BackgroundColor3 = Theme.ElementBackground, BorderSizePixel = 0})
 			create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
 			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
-			local switch = create("Frame", {Parent = frame, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff})
+			local switch = create("Frame", {Parent = switch, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff})
 			create("UICorner", {Parent = switch, CornerRadius = UDim.new(1, 0)})
 			local knob = create("Frame", {Parent = switch, Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Theme.Text})
 			create("UICorner", {Parent = knob, CornerRadius = UDim.new(1, 0)})
@@ -394,8 +394,12 @@ function UIModule:CreateWindow(Title, ImageID)
 			local selected = {}
 
 			if default and type(default) == "table" then
-				for _, d in pairs(default) do
-					selected[d] = true
+				for k, v in pairs(default) do
+					if type(k) == "string" and v == true then
+						selected[k] = true
+					elseif type(v) == "string" then
+						selected[v] = true
+					end
 				end
 			end
 
@@ -407,7 +411,11 @@ function UIModule:CreateWindow(Title, ImageID)
 			local open = false
 			local function updateLabel()
 				local t = {}
-				for k, v in pairs(selected) do if v then table.insert(t, k) end end
+				for k, v in pairs(selected) do 
+					if v == true and type(k) == "string" then 
+						table.insert(t, k) 
+					end 
+				end
 				label.Text = text .. ": " .. (#t > 0 and table.concat(t, ", ") or "None") .. (open and " ↑" or " ↓")
 			end
 
