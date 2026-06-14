@@ -210,15 +210,18 @@ function UIModule:CreateWindow(Title, ImageID)
 				sectionFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
 			end
 		end)
-		
+
 		function sectionAPI:MakeToggle(text, callback)
 			local frame = create("Frame", {Parent = sectionFrame, Size = UDim2.new(1, -10, 0, 45), BackgroundColor3 = Theme.ElementBackground, BorderSizePixel = 0})
 			create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
-			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
-			local switch = create("Frame", {Parent = frame, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff})
+			
+			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 2})
+			local switch = create("Frame", {Parent = frame, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff, ZIndex = 2})
 			create("UICorner", {Parent = switch, CornerRadius = UDim.new(1, 0)})
-			local knob = create("Frame", {Parent = switch, Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Theme.Text})
+			local knob = create("Frame", {Parent = switch, Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Theme.Text, ZIndex = 3})
 			create("UICorner", {Parent = knob, CornerRadius = UDim.new(1, 0)})
+			
+			local clickBtn = create("TextButton", {Parent = frame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 4})
 			local state = false
 
 			local function set(v)
@@ -233,7 +236,10 @@ function UIModule:CreateWindow(Title, ImageID)
 				if callback then callback(state) end
 			end
 
-			frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then set(not state) end end)
+			clickBtn.MouseButton1Click:Connect(function()
+				set(not state)
+			end)
+
 			return function() return state end, set
 		end
 
