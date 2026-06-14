@@ -388,10 +388,16 @@ function UIModule:CreateWindow(Title, ImageID)
 			return function() return box.Text end
 		end
 
-		function sectionAPI:MakeMultiDropdown(text, list, callback)
+		function sectionAPI:MakeMultiDropdown(text, list, default, callback)
 			local frame = create("Frame", {Parent = sectionFrame, Size = UDim2.new(1, -10, 0, 45), BackgroundColor3 = Theme.ElementBackground, BorderSizePixel = 0, ClipsDescendants = true})
 			create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
 			local selected = {}
+
+			if default and type(default) == "table" then
+				for _, d in pairs(default) do
+					selected[d] = true
+				end
+			end
 
 			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(1, -15, 0, 45), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text .. ": None ↓", TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
 			local btn = create("TextButton", {Parent = frame, Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1, Text = ""})
@@ -401,9 +407,11 @@ function UIModule:CreateWindow(Title, ImageID)
 			local open = false
 			local function updateLabel()
 				local t = {}
-				for k,v in pairs(selected) do if v then table.insert(t, k) end end
+				for k, v in pairs(selected) do if v then table.insert(t, k) end end
 				label.Text = text .. ": " .. (#t > 0 and table.concat(t, ", ") or "None") .. (open and " ↑" or " ↓")
 			end
+
+			updateLabel()
 
 			btn.MouseButton1Click:Connect(function()
 				open = not open
@@ -411,10 +419,14 @@ function UIModule:CreateWindow(Title, ImageID)
 				updateLabel()
 			end)
 
-			for _,v in pairs(list) do
-				selected[v] = false
-				local opt = create("TextButton", {Parent = container, Size = UDim2.new(0.8, 0, 0, 30), BackgroundColor3 = Theme.ElementBackground, Text = v, TextColor3 = Theme.SecondaryText, Font = Enum.Font.Gotham, TextSize = 12})
-				create("UICorner", {Parent = opt, CornerRadius = UDim.new(0,4)})
+			for _, v in pairs(list) do
+				if selected[v] == nil then
+					selected[v] = false
+				end
+
+				local startColor = selected[v] and Theme.ToggleOff or Theme.ElementBackground
+				local opt = create("TextButton", {Parent = container, Size = UDim2.new(0.8, 0, 0, 30), BackgroundColor3 = startColor, Text = v, TextColor3 = Theme.SecondaryText, Font = Enum.Font.Gotham, TextSize = 12})
+				create("UICorner", {Parent = opt, CornerRadius = UDim.new(0, 4)})
 
 				local function updateVisual()
 					if selected[v] then
