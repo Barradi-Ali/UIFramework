@@ -210,7 +210,7 @@ function UIModule:CreateWindow(Title, ImageID)
 				sectionFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
 			end
 		end)
-
+		
 		function sectionAPI:MakeToggle(text, callback)
 			local frame = create("Frame", {Parent = sectionFrame, Size = UDim2.new(1, -10, 0, 45), BackgroundColor3 = Theme.ElementBackground, BorderSizePixel = 0})
 			create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
