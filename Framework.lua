@@ -436,6 +436,7 @@ function UIModule:CreateWindow(Title, ImageID)
 			create("UIListLayout", {Parent = container, HorizontalAlignment = Enum.HorizontalAlignment.Center})
 
 			local open = false
+
 			local function updateLabel()
 				local t = {}
 				for k, v in pairs(selected) do if v then table.insert(t, k) end end
@@ -450,32 +451,50 @@ function UIModule:CreateWindow(Title, ImageID)
 				updateLabel()
 			end)
 
-			for _, v in pairs(list) do
-				if selected[v] == nil then
-					selected[v] = false
+			local function populate(newList)
+				for _, child in pairs(container:GetChildren()) do
+					if child:IsA("TextButton") then child:Destroy() end
 				end
 
-				local startColor = selected[v] and Theme.ToggleOff or Theme.ElementBackground
-				local opt = create("TextButton", {Parent = container, Size = UDim2.new(0.8, 0, 0, 30), BackgroundColor3 = startColor, Text = v, TextColor3 = Theme.SecondaryText, Font = Enum.Font.Gotham, TextSize = 12})
-				create("UICorner", {Parent = opt, CornerRadius = UDim.new(0, 4)})
-
-				local function updateVisual()
-					if selected[v] then
-						applyTween(opt, {BackgroundColor3 = Theme.ToggleOff}, 0.15)
-					else
-						applyTween(opt, {BackgroundColor3 = Theme.ElementBackground}, 0.15)
+				for _, v in pairs(newList) do
+					if selected[v] == nil then
+						selected[v] = false
 					end
+
+					local startColor = selected[v] and Theme.ToggleOff or Theme.ElementBackground
+					local opt = create("TextButton", {Parent = container, Size = UDim2.new(0.8, 0, 0, 30), BackgroundColor3 = startColor, Text = v, TextColor3 = Theme.SecondaryText, Font = Enum.Font.Gotham, TextSize = 12})
+					create("UICorner", {Parent = opt, CornerRadius = UDim.new(0, 4)})
+
+					local function updateVisual()
+						if selected[v] then
+							applyTween(opt, {BackgroundColor3 = Theme.ToggleOff}, 0.15)
+						else
+							applyTween(opt, {BackgroundColor3 = Theme.ElementBackground}, 0.15)
+						end
+					end
+
+					opt.MouseButton1Click:Connect(function()
+						selected[v] = not selected[v]
+						updateVisual()
+						if callback then callback(selected) end
+						updateLabel()
+
+						if open then
+							applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + container.AbsoluteSize.Y)})
+						end
+					end)
 				end
 
-				opt.MouseButton1Click:Connect(function()
-					selected[v] = not selected[v]
-					updateVisual()
-					if callback then callback(selected) end
-					updateLabel()
-				end)
+				if open then
+					task.wait()
+					applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + container.AbsoluteSize.Y)})
+				end
+
+				updateLabel()
 			end
 
-			return function() return selected end
+			populate(list)
+			return populate
 		end
 
 		return sectionAPI
