@@ -425,8 +425,12 @@ function UIModule:CreateWindow(Title, ImageID)
 			local selected = {}
 
 			if default and type(default) == "table" then
-				for _, d in pairs(default) do
-					selected[d] = true
+				for k, v in pairs(default) do
+					if type(k) == "string" and type(v) == "boolean" then
+						selected[k] = v
+					elseif type(v) == "string" then
+						selected[v] = true
+					end
 				end
 			end
 
@@ -447,7 +451,11 @@ function UIModule:CreateWindow(Title, ImageID)
 
 			btn.MouseButton1Click:Connect(function()
 				open = not open
-				applyTween(frame, {Size = UDim2.new(1, -10, 0, open and (45 + container.AbsoluteSize.Y) or 45)})
+				local calculatedHeight = container.AbsoluteSize.Y
+				if calculatedHeight == 0 then
+					calculatedHeight = #list * 30
+				end
+				applyTween(frame, {Size = UDim2.new(1, -10, 0, open and (45 + calculatedHeight) or 45)})
 				updateLabel()
 			end)
 
@@ -480,14 +488,22 @@ function UIModule:CreateWindow(Title, ImageID)
 						updateLabel()
 
 						if open then
-							applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + container.AbsoluteSize.Y)})
+							local calculatedHeight = container.AbsoluteSize.Y
+							if calculatedHeight == 0 then
+								calculatedHeight = #newList * 30
+							end
+							applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + calculatedHeight)})
 						end
 					end)
 				end
 
 				if open then
 					task.wait()
-					applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + container.AbsoluteSize.Y)})
+					local calculatedHeight = container.AbsoluteSize.Y
+					if calculatedHeight == 0 then
+						calculatedHeight = #newList * 30
+					end
+					applyTween(frame, {Size = UDim2.new(1, -10, 0, 45 + calculatedHeight)})
 				end
 
 				updateLabel()
