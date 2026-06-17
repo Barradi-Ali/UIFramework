@@ -38,6 +38,13 @@ UIModule.Themes = {
 
 UIModule.ChosenTheme = UIModule.Themes.Default
 
+UIModule._MainFrame = nil
+UIModule._IsOpen = false
+UIModule._OpenX = 0
+UIModule._OpenY = 0
+
+UIModule._PopupActive = false
+
 local function create(c, p)
 	local o = Instance.new(c)
 	for i, v in pairs(p) do o[i] = v end
@@ -74,6 +81,34 @@ local function drag(f, h)
 	end)
 end
 
+function UIModule:OpenUI()
+	if not self._MainFrame then return end
+	self._IsOpen = true
+	self._MainFrame.Visible = true
+	applyTween(self._MainFrame, {Position = UDim2.new(0.5, self._OpenX, 0.5, self._OpenY)}, 0.3)
+end
+
+function UIModule:CloseUI()
+	if not self._MainFrame then return end
+	self._IsOpen = false
+	self._OpenX = self._MainFrame.Position.X.Offset
+	self._OpenY = self._MainFrame.Position.Y.Offset
+	applyTween(self._MainFrame, {Position = UDim2.new(0.5, self._OpenX, 1.5, self._OpenY)}, 0.3)
+	task.delay(0.3, function()
+		if not self._IsOpen then
+			self._MainFrame.Visible = false
+		end
+	end)
+end
+
+function UIModule:IsActive()
+	return self._IsOpen
+end
+
+function UIModule:IsPopupActive()
+	return self._PopupActive
+end
+
 function UIModule:CreateWindow(Title, ImageID)
 	local Theme = self.ChosenTheme
 	local mainUI = {}
@@ -81,6 +116,8 @@ function UIModule:CreateWindow(Title, ImageID)
 	local currentSectionContainer = nil
 
 	local gui = create("ScreenGui", {Parent = playerGui, ResetOnSpawn = false, Name = Title.."_Gui"})
+	self.CurrentGui = gui
+
 	local toggleFrame = create("Frame", {Parent = gui, Size = UDim2.new(0, 60, 0, 60), Position = UDim2.new(0.005, 0, 0.15, 0), BackgroundTransparency = 1})
 	local toggleBtn = create("ImageButton", {Parent = toggleFrame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Image = ImageID})
 
@@ -98,6 +135,7 @@ function UIModule:CreateWindow(Title, ImageID)
 		ClipsDescendants = true
 	})
 
+	self._MainFrame = main
 	create("UICorner", {Parent = main, CornerRadius = UDim.new(0.05, 0)})
 
 	local top = create("Frame", {Parent = main, Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Theme.TopBar, BorderSizePixel = 0, ZIndex = 999})
@@ -120,23 +158,16 @@ function UIModule:CreateWindow(Title, ImageID)
 	create("UIPadding", {Parent = sidebar, PaddingTop = UDim.new(0, 10)})
 	create("UICorner", {Parent = sidebar, CornerRadius = UDim.new(0.05, 0)})
 
-	local open = false
-	local OpenX = 0
-	local OpenY = 0
-
-	local function openUI() open = true main.Visible = true applyTween(main, {Position = UDim2.new(0.5, OpenX, 0.5, OpenY)}, 0.3) end
-	local function closeUI() open = false applyTween(main, {Position = UDim2.new(0.5, main.Position.X.Offset, 1.5, main.Position.Y.Offset)}, 0.3) task.delay(0.3, function() if not open then main.Visible = false end end) end
-
 	toggleBtn.MouseButton1Click:Connect(function() 
-		if open then 
-			closeUI() 
-			OpenX = main.Position.X.Offset
-			OpenY = main.Position.Y.Offset
+		if self._IsOpen then 
+			self:CloseUI() 
 		else 
-			openUI() 
+			self:OpenUI() 
 		end 
 	end)
-	closeBtn.MouseButton1Click:Connect(closeUI)
+	closeBtn.MouseButton1Click:Connect(function()
+		self:CloseUI()
+	end)
 
 	function mainUI:MakeSection(name)
 		local sectionAPI = {}
@@ -214,14 +245,11 @@ function UIModule:CreateWindow(Title, ImageID)
 		function sectionAPI:MakeToggle(text, callback)
 			local frame = create("Frame", {Parent = sectionFrame, Size = UDim2.new(1, -10, 0, 45), BackgroundColor3 = Theme.ElementBackground, BorderSizePixel = 0})
 			create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, 6)})
-			
-			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 2})
-			local switch = create("Frame", {Parent = frame, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff, ZIndex = 2})
+			local label = create("TextLabel", {Parent = frame, Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 15, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Theme.Text, Font = Enum.Font.GothamBold, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left})
+			local switch = create("Frame", {Parent = frame, Size = UDim2.new(0, 40, 0, 20), Position = UDim2.new(1, -50, 0.5, -10), BackgroundColor3 = Theme.ToggleOff})
 			create("UICorner", {Parent = switch, CornerRadius = UDim.new(1, 0)})
-			local knob = create("Frame", {Parent = switch, Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Theme.Text, ZIndex = 3})
+			local knob = create("Frame", {Parent = switch, Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Theme.Text})
 			create("UICorner", {Parent = knob, CornerRadius = UDim.new(1, 0)})
-			
-			local clickBtn = create("TextButton", {Parent = frame, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 4})
 			local state = false
 
 			local function set(v)
@@ -236,10 +264,7 @@ function UIModule:CreateWindow(Title, ImageID)
 				if callback then callback(state) end
 			end
 
-			clickBtn.MouseButton1Click:Connect(function()
-				set(not state)
-			end)
-
+			frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then set(not state) end end)
 			return function() return state end, set
 		end
 
@@ -400,12 +425,8 @@ function UIModule:CreateWindow(Title, ImageID)
 			local selected = {}
 
 			if default and type(default) == "table" then
-				for k, v in pairs(default) do
-					if type(k) == "string" and v == true then
-						selected[k] = true
-					elseif type(v) == "string" then
-						selected[v] = true
-					end
+				for _, d in pairs(default) do
+					selected[d] = true
 				end
 			end
 
@@ -417,11 +438,7 @@ function UIModule:CreateWindow(Title, ImageID)
 			local open = false
 			local function updateLabel()
 				local t = {}
-				for k, v in pairs(selected) do 
-					if v == true and type(k) == "string" then 
-						table.insert(t, k) 
-					end 
-				end
+				for k, v in pairs(selected) do if v then table.insert(t, k) end end
 				label.Text = text .. ": " .. (#t > 0 and table.concat(t, ", ") or "None") .. (open and " ↑" or " ↓")
 			end
 
@@ -465,6 +482,73 @@ function UIModule:CreateWindow(Title, ImageID)
 	end
 
 	return mainUI
+end
+
+function UIModule:CreatePopup(title, description, callback)
+	local Theme = self.ChosenTheme
+	local targetGui = self.CurrentGui or playerGui:FindFirstChildOfClass("ScreenGui") or create("ScreenGui", {Parent = playerGui, ResetOnSpawn = false, Name = "Popup_Gui"})
+
+	local modal = create("TextButton", {
+		Parent = targetGui,
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+		Text = "",
+		AutoButtonColor = false,
+		ZIndex = 10000
+	})
+
+	local popup = create("Frame", {
+		Parent = modal,
+		Size = UDim2.new(0, 340, 0, 220),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = Theme.MainBackground,
+		BorderSizePixel = 0,
+		ClipsDescendants = true,
+		ZIndex = 10001
+	})
+
+	popup.Size = UDim2.new(0, 340, 0, 0)
+	create("UICorner", {Parent = popup, CornerRadius = UDim.new(0, 8)})
+
+	local topBar = create("Frame", {Parent = popup, Size = UDim2.new(1, 0, 0, 35), BackgroundColor3 = Theme.TopBar, BorderSizePixel = 0, ZIndex = 10002})
+	create("UICorner", {Parent = topBar, CornerRadius = UDim.new(0, 8)})
+	create("Frame", {Parent = popup, Size = UDim2.new(1, 0, 0, 5), BackgroundColor3 = Theme.TopBar, BorderSizePixel = 0, Position = UDim2.new(0, 0, 0, 30), ZIndex = 10002})
+
+	create("TextLabel", {Parent = topBar, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1, Text = title:upper(), TextColor3 = Theme.Text, Font = Enum.Font.FredokaOne, TextSize = 16, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Center, ZIndex = 10003})
+
+	local contentContainer = create("Frame", {Parent = popup, Size = UDim2.new(1, -24, 1, -95), Position = UDim2.new(0, 12, 0, 45), BackgroundTransparency = 1, ZIndex = 10002})
+
+	create("TextLabel", {Parent = contentContainer, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = description, TextColor3 = Theme.SecondaryText, Font = Enum.Font.Gotham, TextSize = 13, TextScaled = true, TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Center, TextWrapped = true, ZIndex = 10003})
+
+	local okBtn = create("TextButton", {
+		Parent = popup,
+		Size = UDim2.new(1, -24, 0, 32),
+		Position = UDim2.new(0, 12, 1, -44),
+		BackgroundColor3 = Theme.Accent,
+		Text = "OK",
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		Font = Enum.Font.GothamBold,
+		TextSize = 14,
+		TextScaled = true,
+		ZIndex = 10002
+	})
+	create("UICorner", {Parent = okBtn, CornerRadius = UDim.new(0, 5)})
+
+	self._PopupActive = true
+	applyTween(modal, {BackgroundTransparency = 0.5}, 0.2)
+	applyTween(popup, {Size = UDim2.new(0, 340, 0, 220)}, 0.25)
+
+	okBtn.MouseButton1Click:Connect(function()
+		self._PopupActive = false
+		applyTween(popup, {Size = UDim2.new(0, 340, 0, 0)}, 0.2)
+		applyTween(modal, {BackgroundTransparency = 1}, 0.2)
+
+		task.wait(0.2)
+		modal:Destroy()
+		if callback then callback() end
+	end)
 end
 
 return UIModule
