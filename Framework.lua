@@ -556,13 +556,11 @@ function UIModule:CreatePopup(title, description, callback)
 	create("UICorner", {Parent = okBtn, CornerRadius = UDim.new(0, 5)})
 
 	self._PopupActive = true
-	applyTween(modal, {BackgroundTransparency = 0.5}, 0.2)
 	applyTween(popup, {Size = UDim2.new(0, 340, 0, 220)}, 0.25)
 
 	okBtn.MouseButton1Click:Connect(function()
 		self._PopupActive = false
 		applyTween(popup, {Size = UDim2.new(0, 340, 0, 0)}, 0.2)
-		applyTween(modal, {BackgroundTransparency = 1}, 0.2)
 
 		task.wait(0.2)
 		modal:Destroy()
